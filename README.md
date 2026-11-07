@@ -8,7 +8,8 @@ account, no server, and no tracking.
 1. Open the app link in **Safari**.
 2. Tap **Share → Add to Home Screen**.
 3. Open it from the home screen. It works offline after the first load.
-4. First time: tap **Load plan file** and pick the plan file you were given (kept on your phone only),
+4. First time: open the **setup link** a coworker texted you (one tap, then you're ready), or tap
+   **Load plan file** and pick the plan file you were given (kept on your phone only),
    then **Set goals**: your M1/M2/M3 goals, credits you already have this cycle, and optionally your
    TIC and PTO accelerator from your statement for an estimated commission.
 
@@ -23,7 +24,7 @@ account, no server, and no tracking.
 - The estimated commission is only as good as the plan file and the credits you log. Your official
   statement is the real number.
 - This repository contains no products, credit values or pay rules. Those live in a private plan file
-  that is never committed here.
+  or a setup link. The plan rides after the `#` in the link, which browsers never send to a server.
 - Don't enter customer names, account numbers, phones, or addresses. The reference field is for
   your own short note only.
 

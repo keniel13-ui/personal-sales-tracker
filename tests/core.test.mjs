@@ -64,8 +64,8 @@ test("estimate: TIC x share x curve(attainment + PTO), rounded like a statement"
 
 test("fractional credits never drift (40 x 0.25 = exactly 10.00)", () => {
   assert.equal(fmt(creditsOf(itemsFromSelection({ f: 40 })).m1), "10.00");
-  assert.equal(toHundredths("57.5"), 5750);
-  assert.equal(toHundredths("18.75"), 1875);
+  assert.equal(toHundredths("42.5"), 4250);
+  assert.equal(toHundredths("12.75"), 1275);
   assert.equal(toHundredths("1.255"), null);
   assert.equal(toHundredths("-1"), null);
 });

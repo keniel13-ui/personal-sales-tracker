@@ -321,6 +321,8 @@ function openSettings(focusKey) {
       <h3 style="margin-top:22px">Plan file</h3>
       <p class="small">${state.plan ? `Loaded: ${esc(state.plan.name || "plan")}` : "No plan file loaded."} It stays on this phone only.</p>
       <label class="btn" style="display:block;text-align:center">${state.plan ? "Replace plan file" : "Load plan file"}<input type="file" id="sPlan" accept="application/json,.json" class="hidden"></label>
+      ${state.plan ? `<p class="small" style="margin-top:12px">Share your setup with a coworker. They tap the link once and can start tracking. Send it privately (text), not in public.</p>
+      <div class="sheet-actions"><button class="btn" id="shareBasic">Share products only</button><button class="btn" id="shareFull">Share with pay curves</button></div>` : ""}
       <h3 style="margin-top:22px">Backup</h3>
       <div class="sheet-actions"><button class="btn" id="bExport">Save backup</button><label class="btn" style="text-align:center">Restore<input type="file" id="bImport" accept="application/json,.json" class="hidden"></label></div>`;
     $("sCancel").onclick = closeSheet;
@@ -328,6 +330,7 @@ function openSettings(focusKey) {
     $("bExport").onclick = exportBackup;
     $("bImport").onchange = importBackup;
     $("sPlan").onchange = (e) => { const f = e.target.files?.[0]; if (f) loadPlanFile(f, "sErr"); };
+    if (state.plan) { $("shareBasic").onclick = () => shareSetup(false); $("shareFull").onclick = () => shareSetup(true); }
   };
   draw(key);
   openSheet();
@@ -337,7 +340,7 @@ async function saveNumbers(k) {
   const read = (ids) => ids.map((id) => ($(id).value.trim() === "" ? undefined : toHundredths($(id).value)));
   const tgt = read(["tM1", "tM2", "tM3"]);
   const cur = read(["cM1", "cM2", "cM3"]);
-  if (tgt.some((x) => x === null) || cur.some((x) => x === null)) return showErr("sErr", "Use plain numbers like 57.5 or 18.75.");
+  if (tgt.some((x) => x === null) || cur.some((x) => x === null)) return showErr("sErr", "Use plain numbers like 40 or 12.5.");
   if (tgt.some((x) => x === undefined)) return showErr("sErr", "Enter all three goals.");
   const anyCur = cur.some((x) => x !== undefined);
   const ticRaw = $("pTic").value.replace(/[$,\s]/g, ""), ptoRaw = $("pPto").value.replace(/[%\s]/g, "");
@@ -396,6 +399,46 @@ async function loadPlanFile(file, errId) {
 }
 $("planInput").addEventListener("change", (e) => { const f = e.target.files?.[0]; if (f) loadPlanFile(f, "planErr"); });
 
+// ---------------- setup link: the plan travels in the #fragment, which browsers never send to a server ----
+function b64urlEncode(text) {
+  const bytes = new TextEncoder().encode(text);
+  let bin = ""; for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function b64urlDecode(s) {
+  const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+}
+function setupLink(includeCurves) {
+  const p = { ...state.plan };
+  if (!includeCurves) { delete p.curves; delete p.tic_share; }
+  return `${location.origin}${location.pathname}#setup=${b64urlEncode(JSON.stringify(p))}`;
+}
+async function shareSetup(includeCurves) {
+  const url = setupLink(includeCurves);
+  if (navigator.share) { try { await navigator.share({ title: "Sales tracker setup", url }); return; } catch (e) { if (e?.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(url); toast("Setup link copied ✓"); } catch { prompt("Copy this setup link:", url); }
+}
+async function readSetupFromLink() {
+  const m = location.hash.match(/^#setup=([A-Za-z0-9_-]+)$/);
+  if (!m) return;
+  history.replaceState(null, "", location.pathname + location.search); // don't keep the plan in the address bar
+  let plan;
+  try { plan = JSON.parse(b64urlDecode(m[1])); } catch { return toast("That setup link is damaged."); }
+  if (validatePlan(plan)) return toast("That setup link isn't a valid plan.");
+  const apply = async () => {
+    await commit((st) => { st.plan = plan; });
+    setProducts(plan.products); renderAll(); toast("Setup loaded ✓ Ready to track");
+  };
+  if (!state.plan) return apply();
+  $("planErr").textContent = "";
+  $("planNotice").classList.remove("hidden");
+  $("planNotice").innerHTML = `<strong>Replace your current plan with the one from this link?</strong> Your sales stay as they are.
+    <div class="sheet-actions"><button class="btn" id="setupNo">Keep mine</button><button class="btn primary" id="setupYes">Replace</button></div>`;
+  $("setupNo").onclick = () => { $("planNotice").classList.add("hidden"); };
+  $("setupYes").onclick = () => { apply(); $("planNotice").classList.add("hidden"); };
+}
+
 // ---------------- chrome ----------------
 function showErr(id, msg) { const el = $(id); el.textContent = msg; el.classList.remove("hidden"); }
 function openSheet() { $("sheet").classList.remove("hidden"); }
@@ -440,5 +483,6 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) rend
   } catch { toast("Couldn't read saved data."); }
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
   renderAll();
+  await readSetupFromLink();
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();

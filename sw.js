@@ -1,5 +1,5 @@
 // Offline app shell. Bump VERSION on every deploy so phones pick up the new files.
-const VERSION = "v3";
+const VERSION = "v4";
 const SHELL = ["./", "index.html", "styles.css", "app.js", "core.js", "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

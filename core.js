@@ -1,6 +1,6 @@
 // Pure logic: products, credit math, commission cycles, totals, validation.
 // No DOM here, so it runs in the browser and under `node --test`.
-// Credits are stored as integer hundredths (1.25 -> 125) so fractions never drift.
+// Credits are stored as integer hundredths (2.50 -> 250) so fractions never drift.
 
 // No products, credits or pay rules live in this file. They come from the plan file the user loads
 // (kept private, on the device). See validatePlan() for its shape.
@@ -17,7 +17,7 @@ export function fmt(hundredths) {
 }
 
 export function toHundredths(value) {
-  // "57.5" -> 5750. Rejects anything that is not a plain non-negative number with <= 2 decimals.
+  // "42.5" -> 4250. Rejects anything that is not a plain non-negative number with <= 2 decimals.
   const s = String(value).trim();
   if (!/^\d+(\.\d{1,2})?$/.test(s)) return null;
   const [whole, frac = ""] = s.split(".");

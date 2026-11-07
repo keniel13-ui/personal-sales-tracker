@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sales Tracker</title>
+<meta name="theme-color" content="#0b0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sales">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <div class="cycle" id="cycleLabel">—</div>
+    <div class="sub" id="cycleSub"></div>
+  </div>
+  <button class="icon-btn" id="openSettings" aria-label="Settings and backup">⚙︎</button>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section id="tab-home" class="tab active" aria-label="Home">
+    <div id="planNotice" class="notice hidden">
+      <strong>Load your plan file.</strong>
+      The products, credit values and pay curves come from a private plan file you keep on this phone. It is not part of this app's code.
+      <label class="btn primary" style="display:block;text-align:center;margin-top:10px">Load plan file<input type="file" id="planInput" accept="application/json,.json" class="hidden"></label>
+      <div id="planErr" class="err hidden"></div>
+    </div>
+    <div id="setupNotice" class="notice hidden">
+      <strong>Set your goals.</strong>
+      Enter your M1/M2/M3 goals, and what you already have this cycle if anything. Then just log sales.
+      <button class="btn primary" id="startSetup">Set goals</button>
+    </div>
+    <div id="targetsNotice" class="notice hidden">
+      New cycle: goals carried over from last month. <button class="link" id="confirmTargets">Check goals</button>
+    </div>
+
+    <div id="scoreboard" class="scoreboard"></div>
+    <div id="milestone" class="milestone"></div>
+    <div id="snapLine" class="snapline"></div>
+
+    <h2 class="section-title">Quick Sale</h2>
+    <label class="ref">
+      <span>Reference (optional, no customer info)</span>
+      <input id="ref" maxlength="40" autocomplete="off" placeholder="e.g. Sale 14">
+    </label>
+    <div id="grid" class="grid"></div>
+    <div class="datebar">Sale time: <span id="saleTimeLabel">now</span> <button class="link" id="changeTime">change</button>
+      <input type="datetime-local" id="saleTime" class="hidden">
+    </div>
+    <div id="saveErr" class="err hidden"></div>
+    <div class="savebar">
+      <div class="impact" id="impact">M1 +0.00 | M2 +0.00 | M3 +0.00</div>
+      <button class="btn save" id="save" disabled>Save Sale</button>
+    </div>
+  </section>
+
+  <!-- SALES -->
+  <section id="tab-sales" class="tab" aria-label="Sales">
+    <div class="row-between">
+      <h2 class="section-title">Sales</h2>
+      <select id="salesFilter" aria-label="Which sales"></select>
+    </div>
+    <div id="salesList"></div>
+  </section>
+
+  <!-- ARCHIVE -->
+  <section id="tab-archive" class="tab" aria-label="Archive">
+    <h2 class="section-title">Archive</h2>
+    <div id="archiveList"></div>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Main">
+  <button data-tab="home" class="active">Home</button>
+  <button data-tab="sales">Sales</button>
+  <button data-tab="archive">Archive</button>
+</nav>
+
+<div id="toast" class="toast hidden" role="status"></div>
+
+<div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
+  <div class="sheet-body" id="sheetBody"></div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
